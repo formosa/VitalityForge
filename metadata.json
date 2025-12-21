@@ -1,0 +1,5 @@
+{
+  "name": "VitalityForge",
+  "description": "An RPG enemy vitality tracker that visualizes damage using AI-generated evolving character sprites and video interpolation.",
+  "requestFramePermissions": []
+}
