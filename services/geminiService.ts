@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { MODELS } from "../constants";
 
@@ -74,6 +75,12 @@ const generateContentImage = async (
           return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
         }
       }
+      
+      // If we find a text part but no image part, it's a "text-only" response
+      const textPart = response.candidates[0].content.parts.find(p => p.text);
+      if (textPart && textPart.text) {
+          throw new Error("No image generated from model response. The model may have returned text instead.");
+      }
     }
     
     // Fallback: Check if there's text rejection or safety block
@@ -93,6 +100,22 @@ export const generateCharacterImage = async (
   modelName: string = MODELS.IMAGE_DEFAULT
 ): Promise<string> => {
   return generateContentImage(prompt, modelName, referenceImageBase64);
+};
+
+export const generateText = async (
+  prompt: string,
+  modelName: string = 'gemini-3-flash-preview'
+): Promise<string> => {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  try {
+    const response: GenerateContentResponse = await ai.models.generateContent({
+      model: modelName,
+      contents: prompt,
+    });
+    return response.text || "";
+  } catch (error) {
+    return handleApiError(error);
+  }
 };
 
 export const generateSpriteSheet = async (

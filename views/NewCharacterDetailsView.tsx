@@ -1,6 +1,7 @@
+
 import React, { useMemo } from 'react';
 import { X, ArrowRight, Dices, Info } from 'lucide-react';
-import { CreationWizardState } from '../types';
+import { CreationWizardState, GenderData } from '../types';
 import * as randomizer from '../services/randomizerService';
 import * as storage from '../services/storageService';
 import { DEFAULT_DAMAGE_CONFIG, ABILITY_SCORES_DATA } from '../constants';
@@ -21,13 +22,6 @@ const NewCharacterDetailsView: React.FC<Props> = ({ wizardState, updateWizard, o
   const selectedRaceConfig = useMemo(() => RACE_DATA.find(r => r.race === wizardState.race), [wizardState.race]);
   const hasSubraces = selectedRaceConfig ? selectedRaceConfig.subraces.length > 0 : false;
   
-  const isComplete = 
-    wizardState.name && 
-    wizardState.race && 
-    wizardState.totalHp > 0 && 
-    wizardState.gender &&
-    (!hasSubraces || (hasSubraces && wizardState.subrace));
-
   // Determine available genders based on selected race/subrace
   const selectedSubraceConfig = useMemo(() => 
     selectedRaceConfig?.subraces.find(s => s.subrace === wizardState.subrace), 
@@ -40,22 +34,27 @@ const NewCharacterDetailsView: React.FC<Props> = ({ wizardState, updateWizard, o
     return selectedRaceConfig?.genders || [];
   }, [selectedRaceConfig, selectedSubraceConfig]);
 
+  const isComplete = useMemo(() => {
+    const nameValid = !!wizardState.name && wizardState.name.trim().length > 0;
+    const raceValid = !!wizardState.race;
+    const hpValid = (wizardState.totalHp || 0) > 0;
+    const genderValid = !!wizardState.gender;
+    const subraceValid = !hasSubraces || (hasSubraces && !!wizardState.subrace);
+
+    return nameValid && raceValid && hpValid && genderValid && subraceValid;
+  }, [wizardState.name, wizardState.race, wizardState.totalHp, wizardState.gender, wizardState.subrace, hasSubraces]);
+
   // Calculate current modifiers based on Race and Subrace
   const currentModifiers = useMemo(() => {
     const raceMods = selectedRaceConfig?.modifiers || {};
     const subraceMods = selectedSubraceConfig?.modifiers || {};
-    // Merge modifiers. Subrace overwrites race if same key (though usually additive in D&D, simpler to just merge here for now)
     return { ...raceMods, ...subraceMods };
   }, [selectedRaceConfig, selectedSubraceConfig]);
 
-  // Helper to get modifier value for a specific ability ID
   const getModifierForAbility = (abilityName: string) => {
-      // Mapping: Data uses "Strength", System uses "Strength" (name)
-      // We look up by Name in the modifier object
       return currentModifiers[abilityName] || 0;
   };
 
-  // Current Selections Data for Description Display
   const currentRaceDesc = selectedRaceConfig?.description;
   const currentSubraceDesc = selectedSubraceConfig?.description;
   const currentGenderDesc = availableGenders.find(g => g.gender === wizardState.gender)?.description;
@@ -76,7 +75,6 @@ const NewCharacterDetailsView: React.FC<Props> = ({ wizardState, updateWizard, o
   const handleHpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     if (val === '') {
-        // Temporarily allow 0 to represent empty state for the number input behavior
         updateWizard({ totalHp: 0 });
     } else {
         const parsed = parseInt(val);
@@ -90,29 +88,43 @@ const NewCharacterDetailsView: React.FC<Props> = ({ wizardState, updateWizard, o
       updateWizard({ [type]: values });
   };
 
-  // Reset subrace/gender if race changes
   const handleRaceChange = (newRace: string) => {
+    const newRaceConfig = RACE_DATA.find(r => r.race === newRace);
+    const newHasSubraces = newRaceConfig ? newRaceConfig.subraces.length > 0 : false;
+    
+    // Check if the current gender is still a valid option for the new race
+    const newAvailableGenders = newRaceConfig?.genders || [];
+    const isGenderStillValid = newAvailableGenders.some(g => g.gender === wizardState.gender);
+
     updateWizard({ 
         race: newRace, 
         subrace: undefined, 
-        gender: '' // Reset gender as options might change
+        gender: isGenderStillValid ? wizardState.gender : '' 
     });
   };
 
   const handleSubraceChange = (newSubrace: string) => {
+      const newSubraceConfig = selectedRaceConfig?.subraces.find(s => s.subrace === newSubrace);
+      
+      // Check if subrace specifies unique genders, otherwise fall back to race
+      const newAvailableGenders = (newSubraceConfig?.genders && newSubraceConfig.genders.length > 0) 
+        ? newSubraceConfig.genders 
+        : (selectedRaceConfig?.genders || []);
+        
+      const isGenderStillValid = newAvailableGenders.some(g => g.gender === wizardState.gender);
+
       updateWizard({
           subrace: newSubrace,
-          gender: '' // Reset gender as options might change
+          gender: isGenderStillValid ? wizardState.gender : ''
       });
   };
 
-  // Ability Score Handlers
   const handleScoreChange = (id: string, val: string) => {
       const parsed = parseInt(val);
       const newScores = { ...wizardState.abilityScores };
       
       if (val === '') {
-          newScores[id] = 0; // Temp empty
+          newScores[id] = 0;
       } else if (!isNaN(parsed)) {
           newScores[id] = parsed;
       }
@@ -138,7 +150,6 @@ const NewCharacterDetailsView: React.FC<Props> = ({ wizardState, updateWizard, o
       updateWizard({ applyRaceModifiers: !wizardState.applyRaceModifiers });
   };
 
-  // Compute available damage types from settings to populate the dropdown
   const availableTypes = useMemo(() => {
     const settings = storage.getSettings();
     const config = settings.damageConfig || DEFAULT_DAMAGE_CONFIG;
@@ -164,7 +175,6 @@ const NewCharacterDetailsView: React.FC<Props> = ({ wizardState, updateWizard, o
 
       <div className="flex-1 flex flex-col md:flex-row items-start justify-center p-8 gap-12 overflow-y-auto custom-scrollbar">
         
-        {/* Image Preview - Only show if we have an image (Editing or went back) */}
         {wizardState.referenceImage && (
           <div className="relative group sticky top-8 self-start hidden md:block">
             <div className="absolute -inset-1 bg-red-900/30 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
@@ -175,7 +185,6 @@ const NewCharacterDetailsView: React.FC<Props> = ({ wizardState, updateWizard, o
           </div>
         )}
 
-        {/* Form */}
         <div className="w-full max-w-lg space-y-8 dungeon-panel p-8 rounded-xl border border-stone-800 backdrop-blur-sm">
           
           <div>
@@ -188,7 +197,7 @@ const NewCharacterDetailsView: React.FC<Props> = ({ wizardState, updateWizard, o
                 className="dungeon-input w-full rounded-lg p-4 text-xl font-cinzel text-stone-200"
                 placeholder="e.g. Malakor"
                 />
-                <button onClick={randomizeName} className="dungeon-button px-4 rounded-lg group" title="Randomize Name">
+                <button onClick={randomizeName} className="dungeon-button px-4 rounded-lg group" title="Randomize Name" type="button">
                     <Dices className="w-6 h-6 group-hover:rotate-180 transition-transform duration-500" />
                 </button>
             </div>
@@ -197,13 +206,12 @@ const NewCharacterDetailsView: React.FC<Props> = ({ wizardState, updateWizard, o
           <div className="space-y-4 border-t border-stone-800 pt-6">
             <div className="flex justify-between items-center">
                  <label className="block text-xs font-bold text-red-500 uppercase tracking-widest font-cinzel">Lineage (Race)</label>
-                 <button onClick={randomizeIdentity} className="flex items-center gap-1 text-xs text-stone-500 hover:text-stone-300 transition group" title="Randomize Race/Subrace/Gender">
+                 <button onClick={randomizeIdentity} className="flex items-center gap-1 text-xs text-stone-500 hover:text-stone-300 transition group" title="Randomize Race/Subrace/Gender" type="button">
                     <Dices className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
                     Randomize
                  </button>
             </div>
             
-            {/* Race Selection */}
             <div>
                 <select 
                     value={wizardState.race}
@@ -222,7 +230,6 @@ const NewCharacterDetailsView: React.FC<Props> = ({ wizardState, updateWizard, o
                 )}
             </div>
 
-            {/* Subrace Selection (Conditional) */}
             {hasSubraces && (
                 <div className="animate-fade-in">
                     <label className="block text-xs font-bold text-red-500 mb-2 uppercase tracking-widest font-cinzel">Heritage (Subrace)</label>
@@ -244,7 +251,6 @@ const NewCharacterDetailsView: React.FC<Props> = ({ wizardState, updateWizard, o
                 </div>
             )}
 
-            {/* Gender Selection */}
             <div className="animate-fade-in">
                 <label className="block text-xs font-bold text-red-500 mb-2 uppercase tracking-widest font-cinzel">Form (Gender)</label>
                 <select 
@@ -279,7 +285,7 @@ const NewCharacterDetailsView: React.FC<Props> = ({ wizardState, updateWizard, o
                         />
                         <span>Apply Racial Bonuses</span>
                     </label>
-                    <button onClick={randomizeAllScores} className="flex items-center gap-1 text-xs text-stone-500 hover:text-stone-300 transition group">
+                    <button onClick={randomizeAllScores} className="flex items-center gap-1 text-xs text-stone-500 hover:text-stone-300 transition group" type="button">
                         <Dices className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
                         Randomize All
                     </button>
@@ -301,6 +307,7 @@ const NewCharacterDetailsView: React.FC<Props> = ({ wizardState, updateWizard, o
                                     onClick={() => randomizeScore(ability.id)} 
                                     className="text-stone-600 hover:text-stone-300 transition"
                                     title={`Randomize ${ability.name}`}
+                                    type="button"
                                 >
                                     <Dices className="w-3 h-3" />
                                 </button>
@@ -328,7 +335,6 @@ const NewCharacterDetailsView: React.FC<Props> = ({ wizardState, updateWizard, o
                                 )}
                             </div>
                             
-                            {/* Visual Indicator for Modifier */}
                             {wizardState.applyRaceModifiers && hasMod && (
                                 <div className="absolute top-0 right-0 w-2 h-2 bg-green-500 rounded-bl-full opacity-50"></div>
                             )}
@@ -354,7 +360,7 @@ const NewCharacterDetailsView: React.FC<Props> = ({ wizardState, updateWizard, o
                 className="dungeon-input w-full rounded-lg p-3 text-stone-300 font-mono"
                 placeholder="100"
                 />
-                <button onClick={randomizeHp} className="dungeon-button px-3 rounded-lg group" title="Randomize HP">
+                <button onClick={randomizeHp} className="dungeon-button px-3 rounded-lg group" title="Randomize HP" type="button">
                     <Dices className="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" />
                 </button>
             </div>
@@ -373,9 +379,10 @@ const NewCharacterDetailsView: React.FC<Props> = ({ wizardState, updateWizard, o
           </div>
 
           <button 
-            onClick={onNext}
+            onClick={() => onNext()}
             disabled={!isComplete}
-            className="dungeon-button-primary w-full mt-4 py-4 px-6 rounded-lg shadow-lg transition-all flex items-center justify-center gap-2 transform hover:scale-[1.02]"
+            type="button"
+            className={`dungeon-button-primary w-full mt-4 py-4 px-6 rounded-lg shadow-lg transition-all flex items-center justify-center gap-2 transform ${isComplete ? 'hover:scale-[1.02] cursor-pointer' : 'opacity-50 cursor-not-allowed grayscale'}`}
           >
             <span>{isEditing ? 'Continue' : 'Proceed to Visuals'}</span>
             <ArrowRight className="w-5 h-5" />

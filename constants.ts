@@ -203,14 +203,7 @@ export const VISAGE_MODIFIERS: Record<string, { scale: Record<string, string> }>
 - indications *paucibacillary leprosy* visible on face and body (hypopigmented skin patches with well-defined borders and red inflammation)`,
       "9":`
 - indications *paucibacillary leprosy* visible on face and body (hypopigmented skin patches with well-defined borders and red inflammation)`,
-      "10":`
-- minor indications *paucibacillary leprosy* visible on face and body (minor hypopigmented skin patches)`,
-      "11":`
-- minor indications *paucibacillary leprosy* visible on face and body (minor hypopigmented skin patches)`,
-      "12":`
-- trace indications *paucibacillary leprosy* visible on face and body`,
-      "13":`
-- trace indications *paucibacillary leprosy* visible on face and body`
+      "10":``
     }
   },
   "INT": {
