@@ -1,16 +1,17 @@
+
 import React, { useState, useEffect } from 'react';
 import { ViewState, CharacterProfile, CreationWizardState } from './types';
 import MainView from './views/MainView';
 import SettingsView from './views/SettingsView';
 import NewCharacterReferenceView from './views/NewCharacterReferenceView';
 import NewCharacterDetailsView from './views/NewCharacterDetailsView';
+import NewCharacterVisageView from './views/NewCharacterVisageView';
 import NewCharacterSpritesView from './views/NewCharacterSpritesView';
 import NewCharacterAnimationView from './views/NewCharacterAnimationView';
 import CharacterProfileView from './views/CharacterProfileView';
 import * as storage from './services/storageService';
 import * as randomizer from './services/randomizerService';
 import { ABILITY_SCORES_DATA } from './constants';
-import { RACE_DATA } from './data/races';
 
 const getDefaultAbilityScores = () => {
   return ABILITY_SCORES_DATA.abilities.reduce((acc, ability) => {
@@ -23,6 +24,7 @@ const getInitialWizardState = (): CreationWizardState => {
   const settings = storage.getSettings();
   return {
     referenceImage: null,
+    description: '',
     name: '',
     race: 'Human',
     subrace: undefined,
@@ -34,7 +36,8 @@ const getInitialWizardState = (): CreationWizardState => {
     immunities: [],
     vulnerabilities: [],
     abilityScores: getDefaultAbilityScores(),
-    applyRaceModifiers: settings.defaultApplyRaceModifiers // Default from settings
+    applyRaceModifiers: settings.defaultApplyRaceModifiers,
+    applyAbilityVisage: true
   };
 };
 
@@ -44,13 +47,11 @@ const App: React.FC = () => {
   const [profiles, setProfiles] = useState<CharacterProfile[]>([]);
   const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
   
-  // Wizard State
   const [wizardState, setWizardState] = useState<CreationWizardState>(getInitialWizardState());
 
   useEffect(() => {
     const load = async () => {
       const data = await storage.getProfiles();
-      // Ensure existing profiles have default affinity arrays and ability scores if loaded from old DB
       const patchedData = data.map(p => ({
         ...p,
         resistances: p.resistances || [],
@@ -78,6 +79,7 @@ const App: React.FC = () => {
   const handleEditProfile = (profile: CharacterProfile) => {
     setWizardState({
       referenceImage: profile.referenceImageBase64,
+      description: '', // Reset on edit
       name: profile.name,
       race: profile.race,
       subrace: profile.subrace,
@@ -89,44 +91,22 @@ const App: React.FC = () => {
       immunities: profile.immunities || [],
       vulnerabilities: profile.vulnerabilities || [],
       abilityScores: profile.abilityScores || getDefaultAbilityScores(),
-      applyRaceModifiers: false // Disable auto-modifiers on edit to preserve saved values exactly
+      applyRaceModifiers: false,
+      applyAbilityVisage: true
     });
     setEditingProfileId(profile.id);
-    setView(ViewState.NEW_DETAILS); // Start at Details for consistency
+    setView(ViewState.NEW_DETAILS);
   };
 
   const handleSaveProfile = async (mode: 'video' | 'sprite') => {
     if (!wizardState.name || !wizardState.spriteSheet) return;
 
-    // Calculate final scores if modifiers are enabled
     const finalAbilityScores = { ...wizardState.abilityScores };
     
-    if (wizardState.applyRaceModifiers) {
-        const raceConfig = RACE_DATA.find(r => r.race === wizardState.race);
-        const subraceConfig = raceConfig?.subraces.find(s => s.subrace === wizardState.subrace);
-
-        const raceMods = raceConfig?.modifiers || {};
-        const subraceMods = subraceConfig?.modifiers || {};
-        const allMods = { ...raceMods, ...subraceMods };
-
-        Object.entries(allMods).forEach(([key, val]) => {
-            const lowerKey = key.toLowerCase();
-            // Handle standard abilities (strength, dexterity, etc.)
-            // We need to map capitalized Race keys to lowercase State keys if they match
-            // Keys in ABILITY_SCORES_DATA are like 'strength', 'dexterity'
-            // Keys in RACE_DATA modifiers are like 'Strength', 'Dexterity'
-            const matchedAbilityId = ABILITY_SCORES_DATA.abilities.find(a => a.name === key)?.id;
-            
-            if (matchedAbilityId) {
-                finalAbilityScores[matchedAbilityId] = (finalAbilityScores[matchedAbilityId] || 10) + val;
-            }
-        });
-    }
-
+    // Save logic unchanged - permanently applies racial mods if checked
     let profileToSave: CharacterProfile;
 
     if (editingProfileId) {
-        // Update existing profile
         const existingProfile = profiles.find(p => p.id === editingProfileId);
         if (existingProfile) {
             profileToSave = {
@@ -139,27 +119,18 @@ const App: React.FC = () => {
                 referenceImageBase64: wizardState.referenceImage,
                 spriteSheetBase64: wizardState.spriteSheet,
                 animationMode: mode,
-                // Persist video URI if present in wizard or existing profile
                 animationVideoUri: wizardState.videoUri || existingProfile.animationVideoUri || null,
-                // Clamp current HP to new total if needed
                 currentHp: Math.min(existingProfile.currentHp, wizardState.totalHp),
                 resistances: wizardState.resistances,
                 immunities: wizardState.immunities,
                 vulnerabilities: wizardState.vulnerabilities,
                 abilityScores: finalAbilityScores
             };
-            
             await storage.saveProfile(profileToSave);
-            
             setProfiles(prev => prev.map(p => p.id === profileToSave.id ? profileToSave : p));
-            if (activeProfile?.id === profileToSave.id) {
-                setActiveProfile(profileToSave);
-            }
-        } else {
-            return; // Should not happen
+            if (activeProfile?.id === profileToSave.id) setActiveProfile(profileToSave);
         }
     } else {
-        // Create new profile
         profileToSave = {
             id: crypto.randomUUID(),
             name: wizardState.name,
@@ -174,12 +145,10 @@ const App: React.FC = () => {
             animationVideoUri: wizardState.videoUri,
             createdAt: Date.now(),
             logs: [],
-            // Affinities
             resistances: wizardState.resistances,
             immunities: wizardState.immunities,
             vulnerabilities: wizardState.vulnerabilities,
             abilityScores: finalAbilityScores,
-            // Default Visibility Settings
             isHpVisible: false,
             isHpBarVisible: false, 
             isStatusVisible: false,
@@ -188,14 +157,12 @@ const App: React.FC = () => {
             isEventLogVisible: false,
             isAffinityVisible: false,
             isAbilityScoresVisible: false,
-            // Default Log Details Visibility
             isLogTimeVisible: true,
             isLogTypeVisible: true,
             isLogDeltaVisible: true,
             isLogCalculationVisible: true,
             isLogRemainingHpVisible: true,
         };
-        
         await storage.saveProfile(profileToSave);
         setProfiles(prev => [profileToSave, ...prev]);
     }
@@ -205,7 +172,7 @@ const App: React.FC = () => {
   };
   
   const handleDeleteProfile = async (id: string) => {
-    if (window.confirm("Are you sure you want to permanently banish this character?")) {
+    if (window.confirm("Banish this character permanently?")) {
       await storage.deleteProfile(id);
       setProfiles(prev => prev.filter(p => p.id !== id));
       if (activeProfile?.id === id) {
@@ -232,7 +199,6 @@ const App: React.FC = () => {
         <SettingsView onBack={() => setView(ViewState.MAIN)} />
       )}
 
-      {/* Step 1: Details */}
       {view === ViewState.NEW_DETAILS && (
         <NewCharacterDetailsView 
           wizardState={wizardState}
@@ -243,22 +209,26 @@ const App: React.FC = () => {
         />
       )}
 
-      {/* Step 2: Reference/Identity */}
       {view === ViewState.NEW_REF && (
         <NewCharacterReferenceView 
           wizardState={wizardState}
           updateWizard={updateWizard}
           profiles={profiles}
-          onBack={() => { 
-             // If creating new, go back to Details. If editing, we still go to Details as per flow.
-             setView(ViewState.NEW_DETAILS); 
-          }}
-          onNext={() => setView(ViewState.NEW_SPRITES)}
+          onBack={() => setView(ViewState.NEW_DETAILS)}
+          onNext={() => setView(ViewState.NEW_VISAGE)}
           isEditing={!!editingProfileId}
         />
       )}
 
-      {/* Step 3: Sprites */}
+      {view === ViewState.NEW_VISAGE && (
+        <NewCharacterVisageView
+          wizardState={wizardState}
+          updateWizard={updateWizard}
+          onBack={() => setView(ViewState.NEW_REF)}
+          onNext={() => setView(ViewState.NEW_SPRITES)}
+        />
+      )}
+
       {view === ViewState.NEW_SPRITES && (
         <NewCharacterSpritesView 
           wizardState={wizardState}
@@ -269,7 +239,6 @@ const App: React.FC = () => {
         />
       )}
 
-      {/* Step 4: Animation/Save */}
       {view === ViewState.NEW_ANIMATION && (
         <NewCharacterAnimationView 
           wizardState={wizardState}
@@ -285,9 +254,7 @@ const App: React.FC = () => {
           profile={activeProfile}
           onBack={() => setView(ViewState.MAIN)}
           onUpdateProfile={async (updated) => {
-             // Save to DB (async/background)
              storage.saveProfile(updated);
-             // Update local state immediately for UI responsiveness
              setProfiles(prev => prev.map(p => p.id === updated.id ? updated : p));
              setActiveProfile(updated);
           }}

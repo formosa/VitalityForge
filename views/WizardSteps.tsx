@@ -1,15 +1,17 @@
+
 import React from 'react';
 import { Check } from 'lucide-react';
 
 interface Props {
-  currentStep: number; // 1: Details, 2: Identity, 3: States, 4: Ritual
+  currentStep: number; // 1: Details, 2: Identity, 3: Visage, 4: States, 5: Ritual
 }
 
 const steps = [
   { id: 1, label: "Details" },
   { id: 2, label: "Identity" },
-  { id: 3, label: "States" },
-  { id: 4, label: "Ritual" },
+  { id: 3, label: "Visage" },
+  { id: 4, label: "States" },
+  { id: 5, label: "Ritual" },
 ];
 
 const WizardSteps: React.FC<Props> = ({ currentStep }) => {

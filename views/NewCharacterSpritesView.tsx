@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { X, ArrowRight, Loader2, Sparkles, Download, Upload, Dices } from 'lucide-react';
 import { CreationWizardState } from '../types';
@@ -70,7 +71,7 @@ const NewCharacterSpritesView: React.FC<Props> = ({ wizardState, updateWizard, o
       </div>
 
       <div className="p-6">
-        <WizardSteps currentStep={3} />
+        <WizardSteps currentStep={4} />
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center p-6 space-y-12 overflow-y-auto">

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { X, Save, Loader2, PlayCircle, Key, Info, Image, Film, Dices } from 'lucide-react';
 import { CreationWizardState } from '../types';
@@ -55,7 +56,7 @@ const NewCharacterAnimationView: React.FC<Props> = ({ wizardState, updateWizard,
       </div>
 
       <div className="p-6">
-        <WizardSteps currentStep={4} />
+        <WizardSteps currentStep={5} />
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center p-6 space-y-8 overflow-y-auto">

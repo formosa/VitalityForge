@@ -1,10 +1,10 @@
 
-
 export enum ViewState {
   MAIN = 'MAIN',
   SETTINGS = 'SETTINGS',
   NEW_REF = 'NEW_REF',
   NEW_DETAILS = 'NEW_DETAILS',
+  NEW_VISAGE = 'NEW_VISAGE', // New Step
   NEW_SPRITES = 'NEW_SPRITES',
   NEW_ANIMATION = 'NEW_ANIMATION',
   PROFILE = 'PROFILE',
@@ -32,8 +32,8 @@ export interface CharacterProfile {
   id: string;
   name: string;
   race: string;
-  subrace?: string; // New field
-  gender?: string; // New field
+  subrace?: string;
+  gender?: string;
   totalHp: number;
   currentHp: number;
   referenceImageBase64: string | null;
@@ -59,7 +59,7 @@ export interface CharacterProfile {
   isManualInputVisible: boolean;
   isEventLogVisible: boolean;
   isAffinityVisible: boolean;
-  isAbilityScoresVisible?: boolean; // New setting
+  isAbilityScoresVisible?: boolean;
   
   // Log Details Visibility
   isLogTimeVisible?: boolean;
@@ -71,10 +71,11 @@ export interface CharacterProfile {
 
 export interface CreationWizardState {
   referenceImage: string | null;
+  description: string; // Persistent prompt/description
   name: string;
   race: string;
-  subrace?: string; // New field
-  gender?: string; // New field
+  subrace?: string;
+  gender?: string;
   totalHp: number;
   spriteSheet: string | null;
   videoUri: string | null;
@@ -82,7 +83,8 @@ export interface CreationWizardState {
   immunities: string[];
   vulnerabilities: string[];
   abilityScores: Record<string, number>;
-  applyRaceModifiers: boolean; // New field to track toggle state
+  applyRaceModifiers: boolean;
+  applyAbilityVisage: boolean;
 }
 
 export interface CharacterProperty {
@@ -107,9 +109,9 @@ export interface ColorDef {
 }
 
 export interface DamageTypeConfig {
-  id: string;     // Immutable ID for logic (e.g. "Bludgeoning")
-  name: string;   // Display Name
-  color: string;  // Hex Color
+  id: string;
+  name: string;
+  color: string;
 }
 
 export interface DamageCategoryConfig {
@@ -130,6 +132,7 @@ export interface DamageConfig {
 
 export interface PromptSettings {
   prePrompt: string;
+  visagePrompt: string; // New field
   spritesPrompt: string;
   videoPrompt: string;
   isVeoEnabled: boolean;
@@ -137,7 +140,7 @@ export interface PromptSettings {
   artStyleId: string;
   stylePrompts: Record<string, string>;
   damageConfig: DamageConfig;
-  defaultApplyRaceModifiers: boolean; // New setting
+  defaultApplyRaceModifiers: boolean;
 }
 
 // Race Data Types

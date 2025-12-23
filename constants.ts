@@ -12,13 +12,7 @@ export const ABILITY_SCORES_DATA: AbilityScoreSystem = {
       "sort_order": 1,
       "category": "Physical",
       "description": "Measures bodily power, athletic training, and the extent to which you can exert raw physical force.",
-      "mechanics_impact": [
-        "Melee attack rolls",
-        "Melee damage rolls",
-        "Athletics skill checks",
-        "Carrying capacity",
-        "Push/Drag/Lift limits"
-      ]
+      "mechanics_impact": ["Melee attack rolls", "Melee damage rolls", "Athletics skill checks", "Carrying capacity", "Push/Drag/Lift limits"]
     },
     {
       "id": "dexterity",
@@ -27,14 +21,7 @@ export const ABILITY_SCORES_DATA: AbilityScoreSystem = {
       "sort_order": 2,
       "category": "Physical",
       "description": "Measures agility, reflexes, balance, and hand-eye coordination.",
-      "mechanics_impact": [
-        "Ranged attack rolls",
-        "Finesse melee attack rolls",
-        "Armor Class (AC) bonuses",
-        "Initiative rolls",
-        "Dexterity saving throws",
-        "Acrobatics, Sleight of Hand, and Stealth skill checks"
-      ]
+      "mechanics_impact": ["Ranged attack rolls", "Finesse melee attack rolls", "Armor Class (AC) bonuses", "Initiative rolls", "Dexterity saving throws", "Acrobatics, Sleight of Hand, and Stealth skill checks"]
     },
     {
       "id": "constitution",
@@ -43,12 +30,7 @@ export const ABILITY_SCORES_DATA: AbilityScoreSystem = {
       "sort_order": 3,
       "category": "Physical",
       "description": "Measures health, stamina, and vital force.",
-      "mechanics_impact": [
-        "Hit Point (HP) maximum",
-        "Hit Dice healing",
-        "Concentration checks (for spellcasters)",
-        "Constitution saving throws (resisting poison, cold, etc.)"
-      ]
+      "mechanics_impact": ["Hit Point (HP) maximum", "Hit Dice healing", "Concentration checks (for spellcasters)", "Constitution saving throws (resisting poison, cold, etc.)"]
     },
     {
       "id": "intelligence",
@@ -57,10 +39,7 @@ export const ABILITY_SCORES_DATA: AbilityScoreSystem = {
       "sort_order": 4,
       "category": "Mental",
       "description": "Measures mental acuity, accuracy of recall, and the ability to reason.",
-      "mechanics_impact": [
-        "Spellcasting ability for Wizards, Artificers, and some subclasses",
-        "Arcana, History, Investigation, Nature, and Religion skill checks"
-      ]
+      "mechanics_impact": ["Spellcasting ability for Wizards, Artificers, and some subclasses", "Arcana, History, Investigation, Nature, and Religion skill checks"]
     },
     {
       "id": "wisdom",
@@ -69,10 +48,7 @@ export const ABILITY_SCORES_DATA: AbilityScoreSystem = {
       "sort_order": 5,
       "category": "Mental",
       "description": "Measures how attuned you are to the world around you and represents perceptiveness and intuition.",
-      "mechanics_impact": [
-        "Spellcasting ability for Clerics, Druids, and Rangers",
-        "Perception, Insight, Medicine, Survival, and Animal Handling skill checks"
-      ]
+      "mechanics_impact": ["Spellcasting ability for Clerics, Druids, and Rangers", "Perception, Insight, Medicine, Survival, and Animal Handling skill checks"]
     },
     {
       "id": "charisma",
@@ -81,61 +57,401 @@ export const ABILITY_SCORES_DATA: AbilityScoreSystem = {
       "sort_order": 6,
       "category": "Mental",
       "description": "Measures your ability to interact effectively with others, including confidence and eloquence.",
-      "mechanics_impact": [
-        "Spellcasting ability for Bards, Paladins, Sorcerers, and Warlocks",
-        "Persuasion, Deception, Intimidation, and Performance skill checks"
-      ]
+      "mechanics_impact": ["Spellcasting ability for Bards, Paladins, Sorcerers, and Warlocks", "Persuasion, Deception, Intimidation, and Performance skill checks"]
     }
   ]
 };
 
-export const DEFAULT_PRE_PROMPT = `Create a high-fidelity, close-up character portrait using the description enclosed in the following {curly braces} as the canonical source of identity and features.
+export const VISAGE_MODIFIERS: Record<string, { scale: Record<string, string> }> = {
+  "STR": {
+    "scale": {
+      "1": `
+- extreme indications of *Camptocormia* in posture (extremely uneven shoulders, extreme forward bending of the torso)
 
-Apply a refined adult erotic power-fantasy aesthetic intended for a mature audience (18+ only), embellishing sensuality through visual implication.
+- extreme *Cachexia* (represented by a 90% decrease in muscle mass in torso and limbs)`,
+      "2": `
+- extreme indications of *Camptocormia* in posture (extremely uneven shoulders, extreme forward bending of the torso)
 
-Enhancement guidelines:
-- The character must be clearly depicted.
-- Elevate physical appeal using confident posture, expressive eyes, subtle facial tension, and intimate body language.
+- extreme *Cachexia* (80% decrease in muscle mass in torso and limbs)`,
+      "3": `
+- extreme indications of *Camptocormia* in posture (severely uneven shoulders, severe forward bending of the torso)
+
+- extreme *Cachexia* (70% decrease in muscle mass in torso and limbs)`,
+      "4": `
+- severe indications of*Camptocormia* in posture (severely uneven shoulders, severe forward bending of the torso)
+
+- severe *Cachexia* (60% decrease in muscle mass in torso and limbs)`,
+      "5": `
+- severe indications of *Camptocormia* in posture (uneven shoulders, forward bending of the torso)
+
+- severe *Cachexia* (a 50% decrease in muscle mass in torso and limbs)`,
+      "6": `
+- severe indications of *Camptocormia* in posture (uneven shoulders, forward bending of the torso)
+
+- severe *Cachexia* (a 40% decrease in muscle mass in torso and limbs)`,
+      "7": `
+- indications of *Camptocormia* in posture (uneven shoulders, forward bending of the torso)
+
+- indications of *Cachexia* (a 30% decrease in muscle mass in torso and limbs)`,
+      "8": `
+- minor indications of *Camptocormia* in posture (slightly uneven shoulders, subtly forward bending of the torso)
+
+- minor *Cachexia* (a 20% decrease in muscle mass in torso and limbs)`,
+      "9": `
+- minor indications of *Camptocormia* in posture (slightly uneven shoulders, subtly forward bending of the torso)
+
+- minor *Cachexia* (a 10% decrease in muscle mass in torso and limbs)`,
+      "10": ``,
+      "11": `
+- *Myostatin-related muscle hypertrophy* (represented by a 10% increase in muscle mass in torso and limbs)`,
+      "12": `
+- *Myostatin-related muscle hypertrophy* (represented by a 20% increase in muscle mass in torso and limbs)`,
+      "13": `
+- *Myostatin-related muscle hypertrophy* (represented by a 30% increase in muscle mass in torso and limbs)`,
+      "14": `
+- *Myostatin-related muscle hypertrophy* (represented by a 40% increase in muscle mass in torso and limbs)`,
+      "15": `
+- *Myostatin-related muscle hypertrophy* (represented by a 50% increase in muscle mass in torso and limbs)`,
+      "16": `
+- extreme *Myostatin-related muscle hypertrophy* (represented by a 60% increase in muscle mass in torso and limbs)`,
+      "17": `
+- extreme *Myostatin-related muscle hypertrophy* (represented by a 70% increase in muscle mass in torso and limbs)`,
+      "18": `
+- extreme *Myostatin-related muscle hypertrophy* (represented by a 80% increase in muscle mass in torso and limbs)`,
+      "19": `
+- extreme *Myostatin-related muscle hypertrophy* (represented by a 90% increase in muscle mass in torso and limbs)`,
+      "20": `
+- extreme *Myostatin-related muscle hypertrophy* (represented by a 100% increase in muscle mass in torso and limbs)`
+    }
+  },
+  "DEX": {
+    "scale": {
+      "1": `
+- extreme *Class 3 obesity* (extremely significant excess body fat, skin folds, swollen limbs and facial features)`,
+      "2": `
+- extreme *Class 3 obesity* (extremely significant excess body fat, skin folds, swollen limbs and facial features)`,
+      "3": `
+- severe *Class 2 obesity* (severely significant excess body fat, skin folds, swollen limbs and facial features)`,
+      "4": `
+- severe *Class 2 obesity* (severely significant excess body fat, skin folds, swollen limbs and facial features)`,
+      "5": `
+- *Class 2 obesity* (significant excess body fat, skin folds, swollen limbs and facial features)`,
+      "6": `
+- *Class 2 obesity* (significant excess body fat, skin folds, swollen limbs and facial features)`,
+      "7": `
+- borderline *Class 2 obesity* (excess body fat, swollen limbs and facial features)`,
+      "8": `
+- borderline *Class 2 obesity* (excess body fat, swollen limbs and facial features)`,
+      "9": `
+- *Class 1 obesity* (excess body fat, swollen limbs and facial features)`,
+      "10": ``,
+      "11": `
+- *Lipodystrophy* (represented by a 5% decrease in body fat mass in torso and limbs)`,
+      "12": `
+- *Lipodystrophy* (represented by a 10% decrease in body fat mass in torso and limbs)`,
+      "13": `
+- *Lipodystrophy* (represented by a 15% decrease in body fat mass in torso and limbs)`,
+      "14": `
+- *Lipodystrophy* (represented by a 20% decrease in body fat mass in torso and limbs)`,
+      "15": `
+- *Lipodystrophy* (represented by a 25% decrease in body fat mass in torso and limbs)`,
+      "16": `
+- extreme *Lipodystrophy* (represented by a 30% decrease in body fat mass in torso and limbs)`,
+      "17": `
+- extreme *Lipodystrophy* (represented by a 35% decrease in body fat mass in torso and limbs)`,
+      "18": `
+- extreme *Lipodystrophy* (represented by a 40% decrease in body fat mass in torso and limbs)`,
+      "19": `
+- extreme *Lipodystrophy* (represented by a 45% decrease in body fat mass in torso and limbs)`,
+      "20": `
+- extreme *Lipodystrophy* (represented by a 50% decrease in body fat mass in torso and limbs)`
+    }
+  },
+  "CON": {
+    "scale": {
+      "1": `
+- extreme *psoriasis* visible on face and body (large patches of red, inflamed skin with flaky plaque)
+
+- extreme *paucibacillary leprosy* visible on face and body (large and severe hypopigmented skin patches with well-defined borders and red inflammation)`,
+      "2": `
+- extreme *psoriasis* visible on face and body (large patches of red, inflamed skin with flaky plaque)
+
+- extreme *paucibacillary leprosy* visible on face and body (large and severe hypopigmented skin patches with well-defined borders and red inflammation)`,
+      "3": `
+- severe *psoriasis* visible on face and body (large, dispersed patches of red, inflamed skin with flaky plaque)
+
+- severe *paucibacillary leprosy* visible on face and body (large and severe hypopigmented skin patches with well-defined borders and red inflammation)`,
+      "4": `
+- severe *psoriasis* visible on face and body (large, dispersed patches of red, inflamed skin with flaky plaque)
+
+- severe *paucibacillary leprosy* visible on face and body (large and severe hypopigmented skin patches with well-defined borders and red inflammation)`,
+      "5": `
+- indications of *psoriasis* visible on face and body (patches of red, inflamed skin with flaky plaque)
+
+- indications *paucibacillary leprosy* visible on face and body (hypopigmented skin patches with well-defined borders and red inflammation)`,
+      "6": `
+- indications of *psoriasis* visible on face and body (patches of red, inflamed skin with flaky plaque)
+
+- indications *paucibacillary leprosy* visible on face and body (hypopigmented skin patches with well-defined borders and red inflammation)`,
+      "7":`
+- minor indications of *psoriasis* visible on face and body (small patches of red, inflamed skin with flaky plaque)
+
+- indications *paucibacillary leprosy* visible on face and body (hypopigmented skin patches with well-defined borders and red inflammation)`,
+      "8":`
+- minor indications of *psoriasis* visible on face and body (small patches of red, inflamed skin with flaky plaque)
+
+- indications *paucibacillary leprosy* visible on face and body (hypopigmented skin patches with well-defined borders and red inflammation)`,
+      "9":`
+- indications *paucibacillary leprosy* visible on face and body (hypopigmented skin patches with well-defined borders and red inflammation)`,
+      "10":`
+- minor indications *paucibacillary leprosy* visible on face and body (minor hypopigmented skin patches)`,
+      "11":`
+- minor indications *paucibacillary leprosy* visible on face and body (minor hypopigmented skin patches)`,
+      "12":`
+- trace indications *paucibacillary leprosy* visible on face and body`,
+      "13":`
+- trace indications *paucibacillary leprosy* visible on face and body`
+    }
+  },
+  "INT": {
+    "scale": {
+      "1": `
+ - extreme indications of *Down syndrome* in facial details (extremely flat facial profile, extreme upward-slanting eye shape, and extremely shrunken eyes, ears, and mouth)
+
+- extreme *Exotropia* (inward turning of eyes toward nose)`,
+      "2": `
+- extreme indications of *Down syndrome* in facial details (extremely flat facial profile, extreme upward-slanting eye shape, and extremely shrunken eyes, ears, and mouth)
+
+- extreme *Exotropia* (inward turning of eyes toward nose)`,
+      "3": `
+- severe indications of *Down syndrome* in facial details (severely flat facial profile, severe upward-slanting eye shape, and severely shrunken eyes, ears, and mouth)
+
+- extreme *Exotropia* (inward turning of eyes toward nose)`,
+      "4": `
+- severe indications of *Down syndrome* in facial details (severely flat facial profile, severe upward-slanting eye shape, and severely shrunken eyes, ears, and mouth)
+
+- extreme *Exotropia* (inward turning of eyes toward nose)`,
+      "5": `
+- indications of *Down syndrome* in facial details (flat facial profile, upward-slanting eye shape, and shrunken eyes, ears, and mouth)
+
+- severe *Exotropia* (inward turning of eyes toward nose)`,
+      "6": `
+- indications of *Down syndrome* in facial details (flat facial profile, upward-slanting eye shape, and shrunken eyes, ears, and mouth)
+
+- severe *Exotropia* (inward turning of eyes toward nose)`,
+      "7":  `
+- indications of *Down syndrome* in facial details (flat facial profile, upward-slanting eye shape, and shrunken eyes, ears, and mouth)
+
+- *Exotropia* (inward turning of eyes toward nose)`,
+      "8":  `
+- indications of *Down syndrome* in facial details (flat facial profile, upward-slanting eye shape, and shrunken eyes, ears, and mouth)
+
+- *Exotropia* (inward turning of eyes toward nose)`,
+      "9":  `
+- indications of *Down syndrome* in facial details (flat facial profile, upward-slanting eye shape, and shrunken eyes, ears, and mouth)
+
+- minor *Exotropia* (inward turning of eyes toward nose)`,
+      "10":  `
+- minor indications of *Down syndrome* in facial details (slightly shrunken eyes, ears, and mouth)`,
+      "11":  `
+- minor indications of *Down syndrome* in facial details (slightly shrunken eyes, ears, and mouth)`,
+      "12":  `
+- trace indications of *Down syndrome* in facial details`,
+      "13":  `
+- trace indications of *Down syndrome* in facial details`
+    }
+  },
+  "WIS": {
+    "scale": {
+      "1": `
+- extreme indications *Parry-Romberg Syndrome* in facial details (extremely pale skin and sunken features)
+
+- extreme *Hypertropia* of the right eye (upward turning of the eye)`,
+      "2": `
+- extreme indications *Parry-Romberg Syndrome* in facial details (extremely pale skin and sunken features)
+
+- extreme *Hypertropia* of the right eye (upward turning of the eye)`,
+      "3": `
+- severe indications *Parry-Romberg Syndrome* in facial details (severely pale skin and sunken features)
+
+- severe *Hypertropia* of the right eye (upward turning of the eye)`,
+      "4": `
+- severe indications *Parry-Romberg Syndrome* in facial details (severely pale skin and sunken features)
+
+- severe *Hypertropia* of the right eye (upward turning of the eye)`,
+      "5": `
+- indications *Parry-Romberg Syndrome* in facial details (pale skin and sunken features)
+
+- *Hypertropia* of the right eye (upward turning of the eye)`,
+      "6": `
+- indications *Parry-Romberg Syndrome* in facial details (pale skin and sunken features)
+
+- *Hypertropia* of the right eye (upward turning of the eye)`,
+      "7": `
+- indications *Parry-Romberg Syndrome* in facial details (pale skin and sunken features)
+
+- minor *Hypertropia* of the right eye (upward turning of the eye)`,
+      "8": `
+- indications *Parry-Romberg Syndrome* in facial details (pale skin and sunken features)
+
+- minor *Hypertropia* of the right eye (upward turning of the eye)`,
+      "9": `
+- minor indications *Parry-Romberg Syndrome* in facial details (slightly pale skin and slightly sunken features`,
+      "10": `
+- minor indications *Parry-Romberg Syndrome* in facial details (slightly pale skin and slightly sunken features`,
+      "11": `
+- minor indications *Parry-Romberg Syndrome* in facial details`,
+      "12": `
+- trace indications *Parry-Romberg Syndrome* in facial details`,
+      "13": `
+- trace indications *Parry-Romberg Syndrome* in facial details`
+    }
+  },
+  "CHA": {
+    "scale": {
+      "1": `
+- extreme *Rubinstein-Taybi* syndrome (maximally downward-slanting eyes and an extremely prominent and grotesquely misshapen nose)
+
+- extreme *Exotropia* of the left eye (upward turning)`,
+      "2": `
+- extreme *Rubinstein-Taybi* syndrome (maximally downward-slanting eyes and an extremely prominent and grotesquely misshapen nose)
+
+- extreme *Exotropia* of the left eye (upward turning)`,
+      "3": `
+- extreme *Rubinstein-Taybi* syndrome (extreme downward-slanting eyes and an extremely prominent and grotesquely misshapen nose)
+
+- extreme *Exotropia* of the left eye (upward turning)`,
+      "4": `
+- severe *Rubinstein-Taybi* syndrome (severe downward-slanting eyes and a severely prominent and grotesquely misshapen nose)
+
+- severe *Exotropia* of the left eye (upward turning)`,
+      "5":  `
+- severe *Rubinstein-Taybi* syndrome (severe downward-slanting eyes and a severely prominent and grotesquely misshapen nose)
+
+- severe *Exotropia* of the left eye (upward turning)`,
+      "6":  `
+- indications of *Rubinstein-Taybi* syndrome (downward-slanting eyes and a prominent and grotesquely misshapen nose)
+
+- severe *Exotropia* of the left eye (upward turning)`,
+      "7": `
+- indications of *Rubinstein-Taybi* syndrome (downward-slanting eyes and a prominent and grotesquely misshapen nose)
+
+- severe *Exotropia* of the left eye (upward turning)`,
+      "8": `
+- indications of *Rubinstein-Taybi* syndrome (downward-slanting eyes and a prominent and grotesquely misshapen nose)
+
+- *Exotropia* of the left eye (upward turning)`,
+      "9":  `
+- minor indications of *Rubinstein-Taybi* syndrome (downward-slanting eyes and a prominent and misshapen nose)
+
+- *Exotropia* of the left eye (upward turning)`,
+      "10":  `
+- minor indications of *Rubinstein-Taybi* syndrome (downward-slanting eyes and a prominent and misshapen nose)
+
+- minor *Exotropia* of the left eye (upward turning)`,
+      "11":  `
+- minor indications of *Rubinstein-Taybi* syndrome (downward-slanting eyes and a prominent and misshapen nose)
+
+- minor *Exotropia* of the left eye (upward turning)`,
+      "12": `
+- trace indications of *Rubinstein-Taybi* syndrome`,
+      "13": `
+- trace indications of *Rubinstein-Taybi* syndrome`,
+    }
+  }
+};
+
+export const DEFAULT_PRE_PROMPT = `OBJECTIVE:
+Create a high-fidelity, medium close-up character portrait of a 
+{GENDER} {SUBRACE} {RACE}.
+
+{STYLE}
+
+
+ENHANCE:
+
+Enhance the clarifying description contained between the following curly braces to apply an adult erotic power-fantasy aesthetic intended for a mature audience (18+ only), embellishing sensuality through visual implication.
+
+
+
+ENHANCEMENTS:
+
+- Maximally optimize physical appeal using confident posture, expressive eyes, subtle facial tension, and intimate body language.
+
 - Accentuate form through tailored clothing, strategic fabric tension, cut lines, high-end materials, and elegant silhouettes.
-- Favor suggestive elements such as exposed shoulders, neckline depth, fitted garments, bare arms or legs, soft skin highlights, and deliberate posing — without nudity.
+
+- Favor suggestive elements such as exposed shoulders, neckline depth, fitted (form-fitting) garments, bare arms or legs, suggestively exposed skin, soft skin highlights, and deliberate posing — without nudity.
+
 - Convey allure through cinematic lighting (rim light, soft key light, warm highlights), shallow depth of field, and rich color contrast.
-- Maintain a cohesive “adult fantasy” visual identity: polished, sensual, confident, powerful, and aesthetically restrained.
-- Use realistic anatomy, premium character-art rendering, and a stylized yet believable finish.
 
-Technical Requirements:
- - Camera medium close-up with character in focus
- - Generated image is square
+- Maintain a cohesive “adult fantasy” visual identity: polished, sensual, confident, powerful, and suggestive.
 
-Hard constraints (must not appear):
+- Use realistic, idealized anatomy, premium character-art rendering, and a stylized yet believable and photographic finish.
+
+
+
+HARD_CONSTRAINTS (must not appear):
+
 - No explicit sexual acts or sexual interaction
+
 - No visible genitalia or explicit nudity
+
 - No pornographic framing or overt sexual behavior
 
-Source description (do not contradict, only enhance):
-{user input text}`;
+
+SUBJECT_DESCRIPTION: 
+{
+{RACE_VISAGE}
+
+{SUBRACE_VISAGE}
+
+{GENDER_VISAGE}
+
+{USER_INPUT}
+}
+
+
+BACKGROUND: #000000
+
+
+FRAME: none
+
+
+OUTPUT: Square image dimensions with subject *only* isolated against a pure black background.
+`;
+
+export const DEFAULT_VISAGE_PROMPT = `Produce a high-quality, professional medical image intended for an advanced anatomy textbook targeting an adult audience (18+ years of age) adhering to the depicting of the attached reference image. The figure demonstrates specific clinical features in a respectful and schematic manner:
+
+{STR_VISAGE_MODIFIER}{DEX_VISAGE_MODIFIER}{CON_VISAGE_MODIFIER}{INT_VISAGE_MODIFIER}{WIS_VISAGE_MODIFIER}{CHA_VISAGE_MODIFIER}
+
+*Photographically identical style and quality as attached image inspiration with combined visual indications of conditions.*
+
+**Retain unique visual features: tattoos, scars, makeup, hairstyle, clothing, props, etc..)**
+
+**black background**
+
+**no text or overlays**
+`;
 
 export const DEFAULT_SPRITES_PROMPT = `Prompt: Character vitality sprite sheet
-OBJECTIVE: Image Generation
+OBJECTIVE: Image Generation for an asset of an adult (18+ years of age) video game.
 
 2x2 grid layout, four equal square cells, sequential character evolution sheet, RPG sprite sheet style. 
 
 STRICT LAYOUT RULES:
 - NO borders, NO grid lines, NO white lines, and NO gaps between cells.
-- The four portraits must be perfectly adjacent and seamless.
 - Each character portrait must fill the entire square cell, maximized for size.
 - Maintain consistent lighting and camera angle across all four cells.
 
 CELL DEFINITIONS:
-[Top-Left]: 100% vitality. Source character reference, pristine condition, immaculate equipment, perfect health.
-[Top-Right]: 75% vitality. Same character, battle-worn look, superficial abrasions, aggressive expression, slight grime.
-[Bottom-Left]: 50% vitality. Same character, significant injury, bleeding cuts, dented armor, mid-battle fatigue.
-[Bottom-Right]: 25% vitality. Same character, near-death state, critical physical trauma, heavy blood flow, desperation.
+[Top-Left]: 100% vitality. Source character reference, pristine condition.
+[Top-Right]: 75% vitality.  Same character, confident excitment, battle-worn look with minor injuries, slight grime.
+[Bottom-Left]: 50% vitality. Same character, enraged frenzy, significant injury and bleeding, mid-battle fatigue.
+[Bottom-Right]: 25% vitality. Same character, enraged blood-lust, near-death state, critical physical trauma and bleeding, extreme gore.
 
-Technical specifications: hyper-detailed, 8k resolution, character identity provided by attached reference image, visual storytelling, explicit visual increase in physical degradation. 
+Technical specifications: hyper-detailed, character identity provided by reference image.`;
 
-IMPORTANT: Ensure an image is generated by conforming instructions to align with content moderation policies while adhering to the intent of the prompt and achieving the highest level of visual injury permitted.`;
-
-export const DEFAULT_VIDEO_PROMPT = `TASK: Image-to-Video Generation (Google Veo) INPUT IMAGE FORMAT (STRICT): - The input image is a single 2×2 quadrant sprite sheet. - All four quadrants depict the SAME character at different vitality states. - Quadrant semantics are FIXED and MUST be interpreted as follows: • Top-Left = 100% vitality • Top-Right = 75% vitality • Bottom-Left = 50% vitality • Bottom-Right = 25% vitality - Do NOT introduce any new character details beyond what exists in the source image. - Preserve character identity, proportions, facial structure, costume, materials, and lighting continuity across all frames. OUTPUT VIDEO SPECIFICATION (STRICT): - Total length: EXACTLY 100 frames - Frame rate: Model default (do not resample or pad) - Resolution: Match input image resolution - Camera: Locked, no zoom, no pan, no rotation - Background: Remains consistent and stable unless explicitly required by interpolation - Style: Faithful to the source image (no stylistic reinterpretation) FRAME MAPPING (NON-NEGOTIABLE): - Frame 1 → Top-Left quadrant (100% vitality) - Frame 25 → Top-Right quadrant (75% vitality) - Frame 50 → Bottom-Left quadrant (50% vitality) - Frame 75 → Bottom-Right quadrant (25% vitality) - Frame 100 → A tombstone (neutral, non-descriptive, centered, no character present) INTERPOLATION RULES: - Frames 1–99 must represent a smooth, continuous, linear interpolation of vitality. - Vitality decreases by EXACTLY 1% per frame. - No abrupt transitions, jumps, or stylistic shifts. - Interpolate ONLY between the provided reference states. - Do NOT invent new damage states, clothing changes, facial features, or anatomy. - The character must remain visually consistent and recognizable across all frames. ANIMATION CONSTRAINTS: - No camera movement. - No added motion beyond subtle interpolation artifacts required for smooth transitions. - No secondary characters. - No environmental changes. - No cinematic effects, particles, or lighting shifts. - Maintain consistent shading, color balance, and material response. FINAL FRAME (FRAME 100): - Replace the character entirely with a tombstone. - Tombstone must be static, centered, and visually neutral. - No dramatic effects, weather, or motion. - Clean, simple composition. QUALITY REQUIREMENTS: - Prioritize temporal consistency and identity preservation. - Avoid flicker, morphing errors, or feature drift. - Ensure anatomical coherence and stable facial structure. - Output must be suitable for deterministic sprite-based animation pipelines. GENERATE: - One continuous 100-frame video strictly adhering to the above constraints.`;
+export const DEFAULT_VIDEO_PROMPT = `TASK: Image-to-Video Generation (Google Veo) INPUT IMAGE FORMAT (STRICT): - The input image is a single 2×2 quadrant sprite sheet. - All four quadrants depict the SAME character at different vitality states. - Quadrant semantics are FIXED: Top-Left=100%, Top-Right=75%, Bottom-Left=50%, Bottom-Right=25%. OUTPUT VIDEO: 100 frames smooth linear interpolation from Frame 1 (100%) to Frame 100 (Tombstone). Camera locked, no movement.`;
 
 export const TOMBSTONE_IMAGE_URL = "https://storage.googleapis.com/gemini-codelab-images/tombstone.png";
 
@@ -154,14 +470,8 @@ export const DEFAULT_DAMAGE_CONFIG: DamageConfig = {
   physical: {
     id: "physical",
     category_name: "Physical",
-    primary_color: {
-      name: "Gunmetal Gray",
-      hex: "#5F646B"
-    },
-    accent_colors: [
-      { name: "Dark Steel", hex: "#3F444A" },
-      { name: "Iron Highlight", hex: "#8A9098" }
-    ],
+    primary_color: { name: "Gunmetal Gray", hex: "#5F646B" },
+    accent_colors: [{ name: "Dark Steel", hex: "#3F444A" }, { name: "Iron Highlight", hex: "#8A9098" }],
     damage_types: [
       { id: "Bludgeoning", name: "Bludgeoning", color: "#dc2626" },
       { id: "Piercing", name: "Piercing", color: "#dc2626" },
@@ -171,14 +481,8 @@ export const DEFAULT_DAMAGE_CONFIG: DamageConfig = {
   elemental: {
     id: "elemental",
     category_name: "Elemental",
-    primary_color: {
-      name: "Deep Teal",
-      hex: "#1FA4A9"
-    },
-    accent_colors: [
-      { name: "Frosted Cyan", hex: "#4ED1D4" },
-      { name: "Storm Teal", hex: "#14787C" }
-    ],
+    primary_color: { name: "Deep Teal", hex: "#1FA4A9" },
+    accent_colors: [{ name: "Frosted Cyan", hex: "#4ED1D4" }, { name: "Storm Teal", hex: "#14787C" }],
     damage_types: [
       { id: "Cold", name: "Cold", color: "#3b82f6" },
       { id: "Fire", name: "Fire", color: "#ef4444" },
@@ -189,14 +493,8 @@ export const DEFAULT_DAMAGE_CONFIG: DamageConfig = {
   energy: {
     id: "energy",
     category_name: "Energy",
-    primary_color: {
-      name: "Luminous Violet",
-      hex: "#9B5CFF"
-    },
-    accent_colors: [
-      { name: "Astral Purple", hex: "#6E3BCF" },
-      { name: "Radiant Magenta", hex: "#C27CFF" }
-    ],
+    primary_color: { name: "Luminous Violet", hex: "#9B5CFF" },
+    accent_colors: [{ name: "Astral Purple", hex: "#6E3BCF" }, { name: "Radiant Magenta", hex: "#C27CFF" }],
     damage_types: [
       { id: "Force", name: "Force", color: "#7f1d1d" },
       { id: "Radiant", name: "Radiant", color: "#fef08a" },
@@ -207,14 +505,8 @@ export const DEFAULT_DAMAGE_CONFIG: DamageConfig = {
   chemical: {
     id: "chemical",
     category_name: "Chemical",
-    primary_color: {
-      name: "Toxic Green",
-      hex: "#3DFF6A"
-    },
-    accent_colors: [
-      { name: "Acid Green", hex: "#00C853" },
-      { name: "Corrosive Lime", hex: "#7CFF00" }
-    ],
+    primary_color: { name: "Toxic Green", hex: "#3DFF6A" },
+    accent_colors: [{ name: "Acid Green", hex: "#00C853" }, { name: "Corrosive Lime", hex: "#7CFF00" }],
     damage_types: [
       { id: "Acid", name: "Acid", color: "#84cc16" },
       { id: "Poison", name: "Poison", color: "#22c55e" }
@@ -223,11 +515,7 @@ export const DEFAULT_DAMAGE_CONFIG: DamageConfig = {
 };
 
 export const STYLE_PRESETS = [
-  {
-    id: 'realistic',
-    label: 'Realistic',
-    description: 'Hyperrealistic digital fantasy photography',
-    prompt: `
+  { id: 'realistic', label: 'Realistic', description: 'Hyperrealistic digital fantasy photography', prompt: `
 PHOTOREALISM_MANDATE: {absolute photographic authenticity, DSLR/mirrorless capture quality, zero illustration or digital art artifacts, indistinguishable from professional studio photography}
 
 LIGHTING_SETUP: {
@@ -317,19 +605,8 @@ STYLE_SYNTHESIS: {
 AESTHETIC_REFERENCES: {Annie Leibovitz editorial portraiture, Peter Lindbergh dramatic lighting, high-end fantasy cosplay photography, Paolo Roversi beauty lighting}
 
 FINAL_ASSERTION: **MUST BE COMPLETELY INDISTINGUISHABLE FROM HIGH-END EDITORIAL/FASHION PHOTOGRAPHY SHOT IN PROFESSIONAL STUDIO WITH MEDIUM FORMAT CAMERA - ABSOLUTE ZERO DIGITAL ART, ILLUSTRATION, OR CGI QUALITIES**
-
-BACKGROUND: #000000
-
-FRAME: none
-
-OUTPUT: Square image dimensions with subject *only* isolated against a pure black background
-`
-  },
-  {
-    id: 'tolkien',
-    label: 'Tolkien',
-    description: 'European graphic novel & line art style',
-    prompt: `
+` },
+  { id: 'tolkien', label: 'Tolkien', description: 'European graphic novel & line art style', prompt: `
 STYLE_FOUNDATION: {european graphic novel, bande dessinée aesthetic, french-belgian comic tradition, traditional ink-and-watercolor media}
 
 INK_LINE_WORK: {
@@ -401,19 +678,8 @@ TECHNICAL_CHARACTERISTICS: {
 AESTHETIC_REFERENCES: {moebius, european adventure comics, polished graphic novel album quality, all-ages adventure storytelling sophistication}
 
 FINAL_ASSERTION: **MUST RESEMBLE TRADITIONAL INK-AND-WATERCOLOR COMIC BOOK ILLUSTRATION WITH HAND-DRAWN EUROPEAN BANDE DESSINÉE CHARACTER - NOT DIGITAL ART OR AMERICAN SUPERHERO COMIC STYLE**
-
-BACKGROUND: #000000
-
-FRAME: none
-
-OUTPUT: Square image dimensions with subject *only* isolated against a pure black background
-`
-  },
-  {
-    id: 'dark',
-    label: 'Dark',
-    description: 'Renaissance oil painting & chiaroscuro',
-    prompt: `
+`},
+  { id: 'dark', label: 'Dark', description: 'Renaissance oil painting & chiaroscuro', prompt: `
 STYLE_FOUNDATION: {dark renaissance oil painting, old master technique, baroque dramatic aesthetic, classical portrait merged with dark fantasy}
 
 PAINT_APPLICATION: {
@@ -484,19 +750,8 @@ TECHNICAL_CHARACTERISTICS: {
 AESTHETIC_REFERENCES: {Rembrandt lighting, Caravaggio tenebrism, classical baroque portraiture, museum-quality old master surface characteristics}
 
 FINAL_ASSERTION: **MUST RESEMBLE AUTHENTIC 17TH CENTURY OLD MASTER OIL PAINTING WITH AGED PATINA AND EXTREME TENEBRISM - NOT CLEAN DIGITAL RENDERING OR CONTEMPORARY PAINTING STYLE**
-
-BACKGROUND: #000000
-
-FRAME: none
-
-OUTPUT: Square image dimensions with subject *only* isolated against a pure black background
-`
-  },
-  {
-    id: 'eastern',
-    label: 'Eastern',
-    description: 'Vibrant watercolor & anime aesthetic',
-    prompt: `
+` },
+  { id: 'eastern', label: 'Eastern', description: 'Vibrant watercolor & anime aesthetic', prompt: `
 STYLE_FOUNDATION: {traditional watercolor illustration, anime/manga aesthetic merged with western painting, romantic fantasy art, vintage storybook quality}
 
 WATERCOLOR_TECHNIQUE: {
@@ -589,12 +844,5 @@ TECHNICAL_CHARACTERISTICS: {
 AESTHETIC_REFERENCES: {anime/manga character design, art nouveau decorative arts, vintage children's book illustration, contemporary fantasy anime art direction}
 
 FINAL_ASSERTION: **MUST RESEMBLE AUTHENTIC TRADITIONAL WATERCOLOR ILLUSTRATION WITH ANIME CHARACTER DESIGN AND SOFT ROMANTIC AESTHETIC - NOT DIGITAL PAINTING OR HARD-EDGED VECTOR ART**
-
-BACKGROUND: #000000
-
-FRAME: none
-
-OUTPUT: Square image dimensions with subject *only* isolated against a pure black background
-`
-  }
+` }
 ];
