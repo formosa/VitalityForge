@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, ArrowRight, Loader2, Sparkles, Download, Upload, Dices } from 'lucide-react';
+import { X, ArrowRight, Loader2, Sparkles, Download, Upload, Dices, Grid, Image as ImageIcon } from 'lucide-react';
 import { CreationWizardState } from '../types';
 import * as gemini from '../services/geminiService';
 import * as storage from '../services/storageService';
@@ -11,17 +11,22 @@ interface Props {
   updateWizard: (partial: Partial<CreationWizardState>) => void;
   onCancel: () => void;
   onNext: () => void;
+  onJumpToStep?: (step: number) => void;
   isEditing?: boolean;
 }
 
-const NewCharacterSpritesView: React.FC<Props> = ({ wizardState, updateWizard, onCancel, onNext, isEditing = false }) => {
+const NewCharacterSpritesView: React.FC<Props> = ({ wizardState, updateWizard, onCancel, onNext, onJumpToStep, isEditing = false }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Mobile Tab State
+  const [activeMobileTab, setActiveMobileTab] = useState<'source' | 'grid'>('grid');
 
   const generateSprites = async () => {
     if (!wizardState.referenceImage) return;
     setLoading(true);
     setError(null);
+    setActiveMobileTab('grid'); // Auto switch
     try {
       const settings = storage.getSettings();
 
@@ -70,16 +75,17 @@ const NewCharacterSpritesView: React.FC<Props> = ({ wizardState, updateWizard, o
         </button>
       </div>
 
-      <div className="p-6">
-        <WizardSteps currentStep={4} />
+      <div className="p-4 flex-shrink-0">
+        <WizardSteps currentStep={4} onStepClick={onJumpToStep} />
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center p-6 space-y-12 overflow-y-auto">
         <div className="flex flex-col lg:flex-row gap-12 items-center justify-center w-full">
           
-          <div className="flex flex-col items-center">
+          {/* Source Panel */}
+          <div className={`flex flex-col items-center ${activeMobileTab === 'source' ? 'flex' : 'hidden lg:flex'}`}>
             <h3 className="text-xs text-stone-500 mb-3 font-bold uppercase tracking-[0.2em]">Source Identity</h3>
-            <div className="w-48 h-48 border border-stone-800 rounded-xl overflow-hidden shadow-xl opacity-60 bg-black">
+            <div className="w-48 h-48 md:w-64 md:h-64 border border-stone-800 rounded-xl overflow-hidden shadow-xl opacity-60 bg-black">
                <img src={wizardState.referenceImage!} alt="Ref" className="w-full h-full object-cover" />
             </div>
           </div>
@@ -88,9 +94,10 @@ const NewCharacterSpritesView: React.FC<Props> = ({ wizardState, updateWizard, o
             <ArrowRight className="w-10 h-10 opacity-20" />
           </div>
 
-          <div className="flex flex-col items-center group">
+          {/* Grid Panel */}
+          <div className={`flex flex-col items-center group ${activeMobileTab === 'grid' ? 'flex' : 'hidden lg:flex'}`}>
              <h3 className="text-xs text-red-500 mb-3 font-bold uppercase tracking-[0.2em]">Evolution Grid</h3>
-             <div className="w-[400px] h-[400px] bg-black/60 border-2 border-dashed border-stone-800 rounded-xl flex items-center justify-center relative overflow-hidden shadow-2xl transition-all hover:border-stone-600">
+             <div className="w-[300px] h-[300px] md:w-[400px] md:h-[400px] bg-black/60 border-2 border-dashed border-stone-800 rounded-xl flex items-center justify-center relative overflow-hidden shadow-2xl transition-all hover:border-stone-600">
                 {loading ? (
                   <div className="text-center p-8">
                     <div className="relative mb-4 mx-auto w-12 h-12">
@@ -137,12 +144,12 @@ const NewCharacterSpritesView: React.FC<Props> = ({ wizardState, updateWizard, o
 
         </div>
 
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto px-4 sm:px-0">
            {wizardState.spriteSheet && (
              <button 
                onClick={generateSprites} 
                disabled={loading}
-               className="dungeon-button px-6 py-3 rounded-lg font-bold flex items-center gap-2 group"
+               className="dungeon-button px-6 py-3 rounded-lg font-bold flex items-center justify-center gap-2 group w-full sm:w-auto"
              >
                <Dices className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
                Reforge
@@ -152,12 +159,31 @@ const NewCharacterSpritesView: React.FC<Props> = ({ wizardState, updateWizard, o
            <button 
             onClick={onNext}
             disabled={!wizardState.spriteSheet || loading}
-            className="dungeon-button-primary py-3 px-12 rounded-lg shadow-lg transition-all flex items-center gap-2 transform hover:scale-105"
+            className="dungeon-button-primary py-3 px-12 rounded-lg shadow-lg transition-all flex items-center justify-center gap-2 transform hover:scale-105 w-full sm:w-auto"
           >
             <span>Proceed</span>
             <ArrowRight className="w-5 h-5" />
           </button>
         </div>
+      </div>
+
+      {/* Mobile Tab Bar */}
+      <div className="lg:hidden flex items-center bg-stone-950 border-t border-stone-800 shrink-0">
+         <button 
+           onClick={() => setActiveMobileTab('source')}
+           className={`flex-1 py-4 flex flex-col items-center justify-center gap-1 transition-colors ${activeMobileTab === 'source' ? 'text-red-500 bg-stone-900' : 'text-stone-500'}`}
+         >
+            <ImageIcon className="w-5 h-5" />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Source</span>
+         </button>
+         <div className="w-[1px] h-8 bg-stone-800"></div>
+         <button 
+           onClick={() => setActiveMobileTab('grid')}
+           className={`flex-1 py-4 flex flex-col items-center justify-center gap-1 transition-colors ${activeMobileTab === 'grid' ? 'text-red-500 bg-stone-900' : 'text-stone-500'}`}
+         >
+            <Grid className="w-5 h-5" />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Grid</span>
+         </button>
       </div>
     </div>
   );

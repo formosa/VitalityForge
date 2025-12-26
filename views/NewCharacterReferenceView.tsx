@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Upload, Wand2, ImagePlus, Loader2, Download, Dices, Palette, Ban } from 'lucide-react';
+import { ArrowLeft, Upload, Wand2, ImagePlus, Loader2, Download, Dices, Palette, Ban, Image as ImageIcon, Settings2 } from 'lucide-react';
 import { CreationWizardState, InputMethod, CharacterProfile } from '../types';
 import { MODELS, STYLE_PRESETS } from '../constants';
 import { RACE_DATA } from '../data/races';
@@ -15,14 +15,18 @@ interface Props {
   profiles: CharacterProfile[];
   onBack: () => void;
   onNext: () => void;
+  onJumpToStep?: (step: number) => void;
   isEditing?: boolean;
 }
 
-const NewCharacterReferenceView: React.FC<Props> = ({ wizardState, updateWizard, profiles, onBack, onNext, isEditing = false }) => {
+const NewCharacterReferenceView: React.FC<Props> = ({ wizardState, updateWizard, profiles, onBack, onNext, onJumpToStep, isEditing = false }) => {
   const [loading, setLoading] = useState(false);
   const [selectedProfileId, setSelectedProfileId] = useState('');
   const [option, setOption] = useState<InputMethod>(InputMethod.UPLOAD);
   const [error, setError] = useState<string | null>(null);
+  
+  // Mobile Tab State
+  const [activeMobileTab, setActiveMobileTab] = useState<'configure' | 'identity'>('configure');
   
   const settings = storage.getSettings();
   const isProModel = settings.imageModel === MODELS.IMAGE_PRO;
@@ -71,6 +75,7 @@ const NewCharacterReferenceView: React.FC<Props> = ({ wizardState, updateWizard,
   const triggerStyleTransfer = async (sourceImage: string, styleId: string) => {
     setLoading(true);
     setError(null);
+    setActiveMobileTab('identity'); // Auto switch to preview on mobile
     try {
         const fullPrompt = constructPrompt(settings.prePrompt, styleId, "Identity portrait.");
         const result = await gemini.generateCharacterImage(fullPrompt, sourceImage, 'gemini-2.5-flash-image');
@@ -111,6 +116,7 @@ const NewCharacterReferenceView: React.FC<Props> = ({ wizardState, updateWizard,
   const handleGenerate = async () => {
     setLoading(true);
     setError(null);
+    setActiveMobileTab('identity'); // Auto switch to preview on mobile
     try {
       if (isProModel) {
          const hasKey = await gemini.checkApiKey();
@@ -167,12 +173,15 @@ const NewCharacterReferenceView: React.FC<Props> = ({ wizardState, updateWizard,
         )}
       </div>
 
-      <div className="p-6">
-        <WizardSteps currentStep={2} />
+      <div className="p-4 flex-shrink-0">
+        <WizardSteps currentStep={2} onStepClick={onJumpToStep} />
       </div>
 
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden pb-6 px-6 gap-6">
-        <div className="w-full md:w-1/3 dungeon-panel rounded-xl p-6 overflow-y-auto flex flex-col custom-scrollbar">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden pb-0 md:pb-6 px-0 md:px-6 gap-0 md:gap-6 relative">
+        
+        {/* Method Selection & Inputs (Config Panel) */}
+        <div className={`w-full md:w-1/3 dungeon-panel md:rounded-xl p-6 overflow-y-auto flex-col custom-scrollbar ${activeMobileTab === 'configure' ? 'flex' : 'hidden md:flex'}`}>
           <h3 className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-4">Summoning Method</h3>
           
           <div className="grid grid-cols-1 gap-3 mb-6">
@@ -232,7 +241,9 @@ const NewCharacterReferenceView: React.FC<Props> = ({ wizardState, updateWizard,
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col min-w-0">
+        {/* Preview & Style Selection (Identity Panel) */}
+        <div className={`flex-1 flex flex-col min-w-0 h-full p-4 md:p-0 ${activeMobileTab === 'identity' ? 'flex' : 'hidden md:flex'}`}>
+            {/* Style Selector - Scrollable Horizontal */}
             <div className="dungeon-panel mb-4 p-2 rounded-lg flex items-center gap-2 overflow-x-auto custom-scrollbar flex-shrink-0">
                 <div className="flex items-center px-2 text-stone-500 font-bold uppercase tracking-widest text-[10px] whitespace-nowrap"><Palette className="w-4 h-4 mr-2" /> Style</div>
                 <button onClick={() => handleStyleSelect('none')} className={`px-3 py-1.5 rounded text-[10px] font-bold font-cinzel whitespace-nowrap transition-all flex items-center gap-2 uppercase tracking-tighter ${activeStyle === 'none' ? 'bg-stone-100 text-stone-900 border border-stone-300' : 'bg-stone-900 text-stone-500 border border-stone-800 hover:text-stone-300 hover:bg-stone-800'}`}><Ban className="w-3 h-3" /> Raw</button>
@@ -241,7 +252,7 @@ const NewCharacterReferenceView: React.FC<Props> = ({ wizardState, updateWizard,
                 ))}
             </div>
 
-            <div className="flex-1 dungeon-panel rounded-xl flex flex-col relative overflow-hidden group bg-black/50">
+            <div className="flex-1 dungeon-panel rounded-xl flex flex-col relative overflow-hidden group bg-black/50 min-h-[300px] md:min-h-0">
               <div className="flex-1 flex items-center justify-center relative p-4 h-full w-full">
                 {wizardState.referenceImage ? (
                     <div className="relative z-10 animate-scale-up w-full h-full flex items-center justify-center">
@@ -251,13 +262,32 @@ const NewCharacterReferenceView: React.FC<Props> = ({ wizardState, updateWizard,
                     </div>
                     </div>
                 ) : (
-                    <div className="text-stone-700 text-lg font-cinzel tracking-widest opacity-50 flex flex-col items-center gap-2">
-                        {loading ? <><Loader2 className="w-12 h-12 animate-spin text-red-800" /><span className="animate-pulse text-xs uppercase tracking-widest font-bold">Synthesizing Base Form...</span></> : <><Wand2 className="w-8 h-8 opacity-20" /><span className="text-xs uppercase tracking-widest font-bold">Awaiting Identity Rite</span></>}
+                    <div className="text-stone-700 text-lg font-cinzel tracking-widest opacity-50 flex flex-col items-center gap-2 text-center p-4">
+                        {loading ? <><Loader2 className="w-12 h-12 animate-spin text-red-800" /><span className="animate-pulse text-xs uppercase tracking-widest font-bold">Synthesizing Base Form...</span></> : <><Wand2 className="w-8 h-8 opacity-20" /><span className="text-xs uppercase tracking-widest font-bold">Awaiting Identity Rite</span><p className="text-[10px] font-sans text-stone-600 max-w-[200px]">Use the Configure tab to set parameters.</p></>}
                     </div>
                 )}
               </div>
             </div>
         </div>
+      </div>
+
+      {/* Mobile Tab Bar */}
+      <div className="md:hidden flex items-center bg-stone-950 border-t border-stone-800 shrink-0">
+         <button 
+           onClick={() => setActiveMobileTab('configure')}
+           className={`flex-1 py-4 flex flex-col items-center justify-center gap-1 transition-colors ${activeMobileTab === 'configure' ? 'text-red-500 bg-stone-900' : 'text-stone-500'}`}
+         >
+            <Settings2 className="w-5 h-5" />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Configure</span>
+         </button>
+         <div className="w-[1px] h-8 bg-stone-800"></div>
+         <button 
+           onClick={() => setActiveMobileTab('identity')}
+           className={`flex-1 py-4 flex flex-col items-center justify-center gap-1 transition-colors ${activeMobileTab === 'identity' ? 'text-red-500 bg-stone-900' : 'text-stone-500'}`}
+         >
+            <ImageIcon className="w-5 h-5" />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Identity</span>
+         </button>
       </div>
     </div>
   );

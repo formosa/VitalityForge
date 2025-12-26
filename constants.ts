@@ -363,24 +363,26 @@ Create a high-fidelity, medium close-up character portrait of a
 
 ENHANCE:
 
-Enhance the clarifying description contained between the following curly braces to apply an adult erotic power-fantasy aesthetic intended for a mature audience (18+ only), embellishing sensuality through visual implication.
-
+Enhance the clarifying description contained between the following curly braces to apply an adult erotic medieval power-fantasy aesthetic intended for a mature audience (18+ only), implied eroticism with embellished sensuality through visual implication.
 
 
 ENHANCEMENTS:
 
 - Maximally optimize physical appeal using confident posture, expressive eyes, subtle facial tension, and intimate body language.
 
-- Accentuate form through tailored clothing, strategic fabric tension, cut lines, high-end materials, and elegant silhouettes.
+- Accentuate form through tailored, minimalistic clothing, strategic fabric tension, cut lines, high-end materials, and elegant silhouettes.
 
-- Favor suggestive elements such as exposed shoulders, neckline depth, fitted (form-fitting) garments, bare arms or legs, suggestively exposed skin, soft skin highlights, and deliberate posing — without nudity.
+- Favor suggestive elements such as exposed shoulders or torso, deep neckline depth, fitted (form-fitting) garments, bare arms or legs, suggestively exposed skin, soft skin highlights, and deliberate posing — without nudity.
 
 - Convey allure through cinematic lighting (rim light, soft key light, warm highlights), shallow depth of field, and rich color contrast.
 
 - Maintain a cohesive “adult fantasy” visual identity: polished, sensual, confident, powerful, and suggestive.
 
-- Use realistic, idealized anatomy, premium character-art rendering, and a stylized yet believable and photographic finish.
+- Use realistic, idealized athletic anatomy with enhanced attractive characteristics, premium character-art rendering, and a stylized yet believable and photographic finish.
 
+- Embrace sensuality of expression through techniques like smokey-eye makeup, pouty lips, softly biten lower lip, etc..
+
+- Emphasize skin quality with appearence of sprayed mineral oil for a gliscening surface effect
 
 
 HARD_CONSTRAINTS (must not appear):
@@ -388,8 +390,6 @@ HARD_CONSTRAINTS (must not appear):
 - No explicit sexual acts or sexual interaction
 
 - No visible genitalia or explicit nudity
-
-- No pornographic framing or overt sexual behavior
 
 
 SUBJECT_DESCRIPTION: 
@@ -410,7 +410,10 @@ BACKGROUND: #000000
 FRAME: none
 
 
-OUTPUT: Square image dimensions with subject *only* isolated against a pure black background.
+OUTPUT: Square image dimensions
+
+
+SUBJECT: Isolated against a pure black background
 `;
 
 export const DEFAULT_VISAGE_PROMPT = `Produce a high-quality, professional medical image intended for an advanced anatomy textbook targeting an adult audience (18+ years of age) adhering to the depicting of the attached reference image. The figure demonstrates specific clinical features in a respectful and schematic manner:

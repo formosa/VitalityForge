@@ -14,10 +14,11 @@ interface Props {
   updateWizard: (partial: Partial<CreationWizardState>) => void;
   onCancel: () => void;
   onNext: () => void;
+  onJumpToStep?: (step: number) => void;
   isEditing?: boolean;
 }
 
-const NewCharacterDetailsView: React.FC<Props> = ({ wizardState, updateWizard, onCancel, onNext, isEditing = false }) => {
+const NewCharacterDetailsView: React.FC<Props> = ({ wizardState, updateWizard, onCancel, onNext, onJumpToStep, isEditing = false }) => {
   // Determine if subrace is required based on race selection
   const selectedRaceConfig = useMemo(() => RACE_DATA.find(r => r.race === wizardState.race), [wizardState.race]);
   const hasSubraces = selectedRaceConfig ? selectedRaceConfig.subraces.length > 0 : false;
@@ -169,14 +170,14 @@ const NewCharacterDetailsView: React.FC<Props> = ({ wizardState, updateWizard, o
         </button>
       </div>
 
-      <div className="p-6">
-        <WizardSteps currentStep={1} />
+      <div className="p-4 md:p-6 flex-shrink-0">
+        <WizardSteps currentStep={1} onStepClick={onJumpToStep} />
       </div>
 
-      <div className="flex-1 flex flex-col md:flex-row items-start justify-center p-8 gap-12 overflow-y-auto custom-scrollbar">
+      <div className="flex-1 flex flex-col md:flex-row items-start justify-center p-4 md:p-8 gap-8 overflow-y-auto custom-scrollbar pb-24 md:pb-8">
         
         {wizardState.referenceImage && (
-          <div className="relative group sticky top-8 self-start hidden md:block">
+          <div className="relative group sticky top-8 self-start hidden lg:block">
             <div className="absolute -inset-1 bg-red-900/30 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
             <div className="relative w-64 h-64 md:w-80 md:h-80 rounded border-2 border-stone-700 shadow-2xl bg-black">
               <img src={wizardState.referenceImage} alt="Reference" className="w-full h-full object-cover opacity-90" />
@@ -185,7 +186,7 @@ const NewCharacterDetailsView: React.FC<Props> = ({ wizardState, updateWizard, o
           </div>
         )}
 
-        <div className="w-full max-w-lg space-y-8 dungeon-panel p-8 rounded-xl border border-stone-800 backdrop-blur-sm">
+        <div className="w-full max-w-xl space-y-6 md:space-y-8 dungeon-panel p-4 md:p-8 rounded-xl border border-stone-800 backdrop-blur-sm">
           
           <div>
             <label className="block text-xs font-bold text-red-500 mb-2 uppercase tracking-widest font-cinzel">True Name</label>
@@ -194,7 +195,7 @@ const NewCharacterDetailsView: React.FC<Props> = ({ wizardState, updateWizard, o
                 type="text" 
                 value={wizardState.name}
                 onChange={(e) => updateWizard({ name: e.target.value })}
-                className="dungeon-input w-full rounded-lg p-4 text-xl font-cinzel text-stone-200"
+                className="dungeon-input w-full rounded-lg p-3 md:p-4 text-lg md:text-xl font-cinzel text-stone-200"
                 placeholder="e.g. Malakor"
                 />
                 <button onClick={randomizeName} className="dungeon-button px-4 rounded-lg group" title="Randomize Name" type="button">
@@ -342,12 +343,6 @@ const NewCharacterDetailsView: React.FC<Props> = ({ wizardState, updateWizard, o
                     );
                 })}
             </div>
-            {wizardState.applyRaceModifiers && (
-                 <div className="mt-2 flex items-center gap-1 text-[10px] text-stone-500 italic">
-                     <Info className="w-3 h-3" />
-                     <span>Racial bonuses shown in green. Base score is input.</span>
-                 </div>
-            )}
           </div>
 
           <div className="pt-4 border-t border-stone-800">
@@ -378,18 +373,35 @@ const NewCharacterDetailsView: React.FC<Props> = ({ wizardState, updateWizard, o
               />
           </div>
 
-          <button 
+        </div>
+      </div>
+      
+      {/* Footer / Mobile Sticky Action */}
+      <div className="sticky bottom-0 bg-stone-950 border-t border-stone-800 p-4 md:hidden z-20">
+         <button 
             onClick={() => onNext()}
             disabled={!isComplete}
             type="button"
-            className={`dungeon-button-primary w-full mt-4 py-4 px-6 rounded-lg shadow-lg transition-all flex items-center justify-center gap-2 transform ${isComplete ? 'hover:scale-[1.02] cursor-pointer' : 'opacity-50 cursor-not-allowed grayscale'}`}
+            className={`dungeon-button-primary w-full py-4 px-6 rounded-lg shadow-lg transition-all flex items-center justify-center gap-2 ${isComplete ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed grayscale'}`}
           >
             <span>{isEditing ? 'Continue' : 'Proceed to Visuals'}</span>
             <ArrowRight className="w-5 h-5" />
           </button>
-
-        </div>
       </div>
+      
+      {/* Desktop Button Location */}
+      <div className="hidden md:block p-8 pt-0 flex justify-center">
+         <button 
+            onClick={() => onNext()}
+            disabled={!isComplete}
+            type="button"
+            className={`dungeon-button-primary max-w-lg w-full py-4 px-6 rounded-lg shadow-lg transition-all flex items-center justify-center gap-2 transform ${isComplete ? 'hover:scale-[1.02] cursor-pointer' : 'opacity-50 cursor-not-allowed grayscale'}`}
+          >
+            <span>{isEditing ? 'Continue' : 'Proceed to Visuals'}</span>
+            <ArrowRight className="w-5 h-5" />
+          </button>
+      </div>
+
     </div>
   );
 };

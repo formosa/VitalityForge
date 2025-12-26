@@ -98,6 +98,17 @@ const App: React.FC = () => {
     setView(ViewState.NEW_DETAILS);
   };
 
+  const handleStepJump = (stepId: number) => {
+    const map: Record<number, ViewState> = {
+      1: ViewState.NEW_DETAILS,
+      2: ViewState.NEW_REF,
+      3: ViewState.NEW_VISAGE,
+      4: ViewState.NEW_SPRITES,
+      5: ViewState.NEW_ANIMATION
+    };
+    if (map[stepId]) setView(map[stepId]);
+  };
+
   const handleSaveProfile = async (mode: 'video' | 'sprite') => {
     if (!wizardState.name || !wizardState.spriteSheet) return;
 
@@ -205,6 +216,7 @@ const App: React.FC = () => {
           updateWizard={updateWizard}
           onCancel={() => { resetWizard(); setView(ViewState.MAIN); }}
           onNext={() => setView(ViewState.NEW_REF)}
+          onJumpToStep={handleStepJump}
           isEditing={!!editingProfileId}
         />
       )}
@@ -216,6 +228,7 @@ const App: React.FC = () => {
           profiles={profiles}
           onBack={() => setView(ViewState.NEW_DETAILS)}
           onNext={() => setView(ViewState.NEW_VISAGE)}
+          onJumpToStep={handleStepJump}
           isEditing={!!editingProfileId}
         />
       )}
@@ -226,6 +239,7 @@ const App: React.FC = () => {
           updateWizard={updateWizard}
           onBack={() => setView(ViewState.NEW_REF)}
           onNext={() => setView(ViewState.NEW_SPRITES)}
+          onJumpToStep={handleStepJump}
         />
       )}
 
@@ -235,6 +249,7 @@ const App: React.FC = () => {
           updateWizard={updateWizard}
           onCancel={() => { resetWizard(); setView(ViewState.MAIN); }}
           onNext={() => setView(ViewState.NEW_ANIMATION)}
+          onJumpToStep={handleStepJump}
           isEditing={!!editingProfileId}
         />
       )}
@@ -245,6 +260,7 @@ const App: React.FC = () => {
           updateWizard={updateWizard}
           onCancel={() => { resetWizard(); setView(ViewState.MAIN); }}
           onSave={handleSaveProfile}
+          onJumpToStep={handleStepJump}
           isEditing={!!editingProfileId}
         />
       )}

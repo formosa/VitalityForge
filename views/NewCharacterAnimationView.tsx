@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { X, Save, Loader2, PlayCircle, Key, Info, Image, Film, Dices } from 'lucide-react';
+import { X, Save, Loader2, PlayCircle, Key, Info, Image, Film, Dices, Grid } from 'lucide-react';
 import { CreationWizardState } from '../types';
 import * as gemini from '../services/geminiService';
 import * as storage from '../services/storageService';
@@ -11,12 +11,17 @@ interface Props {
   updateWizard: (partial: Partial<CreationWizardState>) => void;
   onCancel: () => void;
   onSave: (mode: 'video' | 'sprite') => void;
+  onJumpToStep?: (step: number) => void;
   isEditing?: boolean;
 }
 
-const NewCharacterAnimationView: React.FC<Props> = ({ wizardState, updateWizard, onCancel, onSave, isEditing = false }) => {
+const NewCharacterAnimationView: React.FC<Props> = ({ wizardState, updateWizard, onCancel, onSave, onJumpToStep, isEditing = false }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Mobile Tab State
+  const [activeMobileTab, setActiveMobileTab] = useState<'sheet' | 'cinema'>('cinema');
+  
   const settings = storage.getSettings();
 
   const handleUpdateKey = async () => {
@@ -33,6 +38,7 @@ const NewCharacterAnimationView: React.FC<Props> = ({ wizardState, updateWizard,
 
     setLoading(true);
     setError(null);
+    setActiveMobileTab('cinema'); // Auto switch
     try {
       const videoUri = await gemini.generateAnimationVideo(settings.videoPrompt, wizardState.spriteSheet);
       const authedUri = `${videoUri}&key=${process.env.API_KEY}`;
@@ -55,14 +61,15 @@ const NewCharacterAnimationView: React.FC<Props> = ({ wizardState, updateWizard,
         </button>
       </div>
 
-      <div className="p-6">
-        <WizardSteps currentStep={5} />
+      <div className="p-4 flex-shrink-0">
+        <WizardSteps currentStep={5} onStepClick={onJumpToStep} />
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center p-6 space-y-8 overflow-y-auto">
         {settings.isVeoEnabled ? (
             <div className="flex flex-col xl:flex-row gap-12 items-center justify-center w-full">
-              <div className="flex flex-col items-center opacity-50 hover:opacity-100 transition duration-500">
+              {/* Static Source Panel */}
+              <div className={`flex flex-col items-center opacity-50 hover:opacity-100 transition duration-500 ${activeMobileTab === 'sheet' ? 'flex' : 'hidden xl:flex'}`}>
                 <h3 className="text-stone-500 mb-3 font-bold uppercase tracking-widest text-[10px]">Static Source</h3>
                 <div className="w-64 h-64 border border-stone-700 rounded-xl overflow-hidden bg-black">
                    <img src={wizardState.spriteSheet!} alt="Sprites" className="w-full h-full object-contain" />
@@ -73,9 +80,10 @@ const NewCharacterAnimationView: React.FC<Props> = ({ wizardState, updateWizard,
                 <Film className="w-8 h-8 opacity-20" />
               </div>
 
-              <div className="flex flex-col items-center">
+              {/* Video Panel */}
+              <div className={`flex flex-col items-center ${activeMobileTab === 'cinema' ? 'flex' : 'hidden xl:flex'}`}>
                  <h3 className="text-amber-600 mb-3 font-bold uppercase tracking-widest text-[10px]">Veo Interpolation</h3>
-                 <div className="w-[400px] h-[400px] bg-black border border-amber-900/30 rounded-xl flex items-center justify-center relative overflow-hidden shadow-2xl ring-1 ring-amber-500/10">
+                 <div className="w-[300px] h-[300px] md:w-[400px] md:h-[400px] bg-black border border-amber-900/30 rounded-xl flex items-center justify-center relative overflow-hidden shadow-2xl ring-1 ring-amber-500/10">
                     {loading ? (
                       <div className="text-center p-6">
                         <Loader2 className="w-12 h-12 animate-spin text-amber-600 mx-auto mb-4" />
@@ -130,7 +138,7 @@ const NewCharacterAnimationView: React.FC<Props> = ({ wizardState, updateWizard,
         ) : (
             <div className="flex flex-col items-center">
                 <h3 className="text-stone-500 mb-3 font-bold uppercase tracking-widest text-[10px]">Vitality Sheet</h3>
-                <div className="w-96 h-96 border border-stone-700 rounded-xl overflow-hidden shadow-2xl bg-black">
+                <div className="w-64 h-64 md:w-96 md:h-96 border border-stone-700 rounded-xl overflow-hidden shadow-2xl bg-black">
                    <img src={wizardState.spriteSheet!} alt="Sprites" className="w-full h-full object-contain" />
                 </div>
                 <p className="text-xs text-stone-500 mt-6 max-w-xs text-center">
@@ -139,10 +147,10 @@ const NewCharacterAnimationView: React.FC<Props> = ({ wizardState, updateWizard,
             </div>
         )}
 
-        <div className="flex flex-col gap-4 items-center w-full max-w-md pt-8">
+        <div className="flex flex-col gap-4 items-center w-full max-w-md pt-8 px-4 sm:px-0 pb-4">
           {settings.isVeoEnabled ? (
             <>
-              <div className="flex gap-4 w-full">
+              <div className="flex flex-col sm:flex-row gap-4 w-full">
                 <button
                   onClick={() => onSave('sprite')}
                   disabled={loading}
@@ -181,6 +189,27 @@ const NewCharacterAnimationView: React.FC<Props> = ({ wizardState, updateWizard,
           )}
         </div>
       </div>
+
+      {/* Mobile Tab Bar (Only if Veo is enabled, otherwise minimal tabs needed as it's single view) */}
+      {settings.isVeoEnabled && (
+        <div className="xl:hidden flex items-center bg-stone-950 border-t border-stone-800 shrink-0">
+           <button 
+             onClick={() => setActiveMobileTab('sheet')}
+             className={`flex-1 py-4 flex flex-col items-center justify-center gap-1 transition-colors ${activeMobileTab === 'sheet' ? 'text-red-500 bg-stone-900' : 'text-stone-500'}`}
+           >
+              <Grid className="w-5 h-5" />
+              <span className="text-[10px] font-bold uppercase tracking-widest">Sheet</span>
+           </button>
+           <div className="w-[1px] h-8 bg-stone-800"></div>
+           <button 
+             onClick={() => setActiveMobileTab('cinema')}
+             className={`flex-1 py-4 flex flex-col items-center justify-center gap-1 transition-colors ${activeMobileTab === 'cinema' ? 'text-red-500 bg-stone-900' : 'text-stone-500'}`}
+           >
+              <Film className="w-5 h-5" />
+              <span className="text-[10px] font-bold uppercase tracking-widest">Cinema</span>
+           </button>
+        </div>
+      )}
     </div>
   );
 };

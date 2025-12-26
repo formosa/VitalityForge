@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { ArrowLeft, ArrowRight, Loader2, Activity, ShieldCheck, Sparkles, FastForward, Info, Code, X, Copy, Edit3, Sliders, RotateCcw, Check } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2, Activity, ShieldCheck, Sparkles, FastForward, Info, Code, X, Copy, Edit3, Sliders, RotateCcw, Check, Image as ImageIcon } from 'lucide-react';
 import { CreationWizardState } from '../types';
 import { VISAGE_MODIFIERS, ABILITY_SCORES_DATA, STYLE_PRESETS } from '../constants';
 import { RACE_DATA } from '../data/races';
@@ -13,6 +13,7 @@ interface Props {
   updateWizard: (partial: Partial<CreationWizardState>) => void;
   onBack: () => void;
   onNext: () => void;
+  onJumpToStep?: (step: number) => void;
 }
 
 const VISAGE_LABELS: Record<string, string> = {
@@ -24,7 +25,7 @@ const VISAGE_LABELS: Record<string, string> = {
   CHA: "Attractiveness"
 };
 
-const NewCharacterVisageView: React.FC<Props> = ({ wizardState, updateWizard, onBack, onNext }) => {
+const NewCharacterVisageView: React.FC<Props> = ({ wizardState, updateWizard, onBack, onNext, onJumpToStep }) => {
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -33,6 +34,9 @@ const NewCharacterVisageView: React.FC<Props> = ({ wizardState, updateWizard, on
   const [copySuccess, setCopySuccess] = useState(false);
   const [activeTab, setActiveTab] = useState<'traits' | 'custom'>('traits');
   const [customPrompt, setCustomPrompt] = useState('');
+  
+  // Mobile Tab State
+  const [activeMobileTab, setActiveMobileTab] = useState<'controls' | 'visage'>('controls');
   
   const settings = storage.getSettings();
 
@@ -96,6 +100,7 @@ const NewCharacterVisageView: React.FC<Props> = ({ wizardState, updateWizard, on
     setLoading(true);
     setLoadingMessage("Executing Ritual...");
     setError(null);
+    setActiveMobileTab('visage'); // Auto switch on mobile
 
     const originalPrompt = constructVisagePrompt();
 
@@ -212,10 +217,12 @@ ${originalPrompt}
         </div>
       </div>
 
-      <div className="p-6"><WizardSteps currentStep={3} /></div>
+      <div className="p-4"><WizardSteps currentStep={3} onStepClick={onJumpToStep} /></div>
 
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden pb-6 px-6 gap-6">
-        <div className="w-full md:w-[40%] dungeon-panel rounded-xl flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden pb-0 md:pb-6 px-0 md:px-6 gap-0 md:gap-6 relative">
+        
+        {/* Controls Panel (Ritual) */}
+        <div className={`w-full md:w-[40%] dungeon-panel md:rounded-xl flex-col overflow-hidden ${activeMobileTab === 'controls' ? 'flex' : 'hidden md:flex'}`}>
           <div className="flex border-b border-stone-800 bg-black/40">
              <button 
                 onClick={() => handleTabChange('traits')}
@@ -359,7 +366,8 @@ ${originalPrompt}
           </div>
         </div>
 
-        <div className="flex-1 dungeon-panel rounded-xl flex flex-col relative overflow-hidden bg-black/50">
+        {/* Preview Panel (Visage) */}
+        <div className={`flex-1 dungeon-panel md:rounded-xl flex flex-col relative overflow-hidden bg-black/50 ${activeMobileTab === 'visage' ? 'flex' : 'hidden md:flex'}`}>
           <div className="absolute top-0 left-0 p-4 w-full bg-gradient-to-b from-black/80 to-transparent z-10 flex justify-between items-center">
             <h3 className="text-xs font-bold text-red-500 uppercase tracking-widest font-cinzel">
               {manifestedPreview ? 'Manifested Identity' : 'Base Identity'}
@@ -439,6 +447,25 @@ ${originalPrompt}
             </div>
         </div>
       )}
+
+      {/* Mobile Tab Bar */}
+      <div className="md:hidden flex items-center bg-stone-950 border-t border-stone-800 shrink-0">
+         <button 
+           onClick={() => setActiveMobileTab('controls')}
+           className={`flex-1 py-4 flex flex-col items-center justify-center gap-1 transition-colors ${activeMobileTab === 'controls' ? 'text-red-500 bg-stone-900' : 'text-stone-500'}`}
+         >
+            <Sliders className="w-5 h-5" />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Ritual</span>
+         </button>
+         <div className="w-[1px] h-8 bg-stone-800"></div>
+         <button 
+           onClick={() => setActiveMobileTab('visage')}
+           className={`flex-1 py-4 flex flex-col items-center justify-center gap-1 transition-colors ${activeMobileTab === 'visage' ? 'text-red-500 bg-stone-900' : 'text-stone-500'}`}
+         >
+            <ImageIcon className="w-5 h-5" />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Visage</span>
+         </button>
+      </div>
 
       <style>{`
         input[type=range]::-webkit-slider-thumb {
